@@ -29,28 +29,37 @@ class sender(StatesGroup):
 
 @r.message(F.text == "Новая рассылка")
 async def start_sender(message: Message, state: FSMContext):
-    await message.answer("Отправьте фото для рассылки", reply_markup=ReplyKeyboardRemove())
+    if message.from_user.id != ADMIN_ID:
+        await message.answer("У вас нет доступа.")
+        return
+    skip_kb = ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="Пропустить")]],
+        resize_keyboard=True
+    )
+    await message.answer("Отправьте фото для рассылки", reply_markup=skip_kb)
     await state.set_state(sender.photo)
 
 @r.message(sender.photo)
 async def photo_handler(message: Message, state: FSMContext):
-    if not message.photo:
-        await message.answer("Пожалуйста, отправьте именно фото!")
+    if message.text == "Пропустить":
+        await state.update_data(photo=None)
+    elif message.photo:
+        photo_id = message.photo[-1].file_id
+        await state.update_data(photo=photo_id)
+    else:
+        await message.answer("Пожалуйста, отправьте фото или нажмите Пропустить")
         return
-    photo_id = message.photo[-1].file_id
-    await state.update_data(photo=photo_id)
-    await message.answer("Пришлите текст")
+    await message.answer("Пришлите текст", reply_markup=ReplyKeyboardRemove())
     await state.set_state(sender.text)
 
 @r.message(sender.text)
 async def send_all(message: Message, state: FSMContext, bot: Bot):
-    text = message.text
-    data = await state.get_data()
-    photo_user = data.get('photo')
-    users = get_all_users()
     for user_id in users:
         try:
-            await bot.send_photo(user_id, photo=photo_user, caption=text)
+            if photo_user:
+                await bot.send_photo(user_id, photo=photo_user, caption=text)
+            else:
+                await bot.send_message(user_id, text=text)
         except Exception as error:
             print(f'Проблема: {error}')
 
