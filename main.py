@@ -34,6 +34,9 @@ async def start_sender(message: Message, state: FSMContext):
 
 @r.message(sender.photo)
 async def photo_handler(message: Message, state: FSMContext):
+    if not message.photo:
+        await message.answer("Пожалуйста, отправьте именно фото!")
+        return
     photo_id = message.photo[-1].file_id
     await state.update_data(photo=photo_id)
     await message.answer("Пришлите текст")
