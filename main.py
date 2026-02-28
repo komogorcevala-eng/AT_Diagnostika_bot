@@ -76,7 +76,7 @@ async def start(message: Message):
         )
 
 async def main():
-    await dp.start_polling(bot, polling_timeout=30)
+    await dp.start_polling(bot)
 
 if __name__ == "__main__":
     create_db()
