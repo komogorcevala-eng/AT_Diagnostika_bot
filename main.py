@@ -54,7 +54,7 @@ async def send_all(message: Message, state: FSMContext, bot: Bot):
         except Exception as error:
             print(f'Проблема: {error}')
 
-    await message.answer('Сообщение успешно разослано')
+    await message.answer('Сообщение успешно разослано', reply_markup=main_kb)
     await state.clear()
 
 @r.message(CommandStart())
