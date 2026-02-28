@@ -54,6 +54,10 @@ async def photo_handler(message: Message, state: FSMContext):
 
 @r.message(sender.text)
 async def send_all(message: Message, state: FSMContext, bot: Bot):
+    text = message.text
+    data = await state.get_data()
+    photo_user = data.get('photo')
+    users = get_all_users()
     for user_id in users:
         try:
             if photo_user:
@@ -63,7 +67,7 @@ async def send_all(message: Message, state: FSMContext, bot: Bot):
         except Exception as error:
             print(f'Проблема: {error}')
 
-    await message.answer('Сообщение успешно разослано', reply_markup=main_kb)
+    await message.answer('Сообщение успешно разослано.', reply_markup=main_kb)
     await state.clear()
 
 @r.message(CommandStart())
